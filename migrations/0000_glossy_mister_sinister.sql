@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS "users" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"name" varchar(50) NOT NULL,
 	"hashed_password" varchar(256) NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,

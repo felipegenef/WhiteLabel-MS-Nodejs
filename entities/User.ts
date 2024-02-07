@@ -1,9 +1,11 @@
-import { pgTable, uuid, varchar, timestamp, index } from "drizzle-orm/pg-core";
-
+import { pgTable, text, varchar, timestamp, index } from "drizzle-orm/pg-core";
+import { ulid } from "ulid";
 export const users = pgTable(
   "users",
   {
-    id: uuid("id").primaryKey(),
+    id: text("id")
+      .$defaultFn(() => ulid()) // ULID is better for write performance than UUID
+      .primaryKey(),
     name: varchar("name", { length: 50 }).notNull(),
     password: varchar("hashed_password", { length: 256 }).notNull(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
