@@ -1,17 +1,27 @@
-import { DataSource } from "typeorm";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Repository } from "../../../data/db";
-import { User } from "../../../entities/User";
 import { UserDTO } from "./DTOs";
+import { users } from "../../../entities/User";
+import { isNull } from "drizzle-orm";
 
 export interface RepositoryInterface {
   findAll: () => Promise<UserDTO[]>;
 }
 @Repository
 export class EntityRepository implements RepositoryInterface {
-  private connection: DataSource;
+  private db: NodePgDatabase;
   async findAll(): Promise<UserDTO[]> {
-    const userRepo = this.connection.getRepository(User);
-    const allUsers = await userRepo.find();
+    const allUsers = await this.db
+      .select({
+        id: users.id,
+        name: users.name,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        deletedAt: users.deletedAt,
+      })
+      .from(users)
+      .where(isNull(users.deletedAt));
+
     return allUsers.map(
       (item) =>
         new UserDTO(

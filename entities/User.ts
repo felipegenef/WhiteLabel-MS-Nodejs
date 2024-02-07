@@ -1,40 +1,20 @@
-import {
-  Entity,
-  Column,
-  CreateDateColumn,
-  PrimaryColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-} from "typeorm";
-import { randomUUID } from "crypto";
-@Entity("users")
-export class User {
-  constructor() {
-    if (!this.id) {
-      this.id = randomUUID();
-    }
+import { pgTable, uuid, varchar, timestamp, index } from "drizzle-orm/pg-core";
+
+export const users = pgTable(
+  "users",
+  {
+    id: uuid("id").primaryKey(),
+    name: varchar("name", { length: 50 }).notNull(),
+    password: varchar("hashed_password", { length: 256 }).notNull(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (users) => {
+    return {
+      nameIndex: index("soft_delete_idx").on(users.deletedAt),
+    };
   }
-  @PrimaryColumn()
-  id: string;
-  @Column()
-  name: string;
-  @Column({
-    name: "hashed_password",
-    transformer: {
-      to(value) {
-        // make hashing
-        return value + " hashed";
-      },
-      from(value) {
-        return value;
-      },
-    },
-  })
-  hashedPassword: string;
-  @CreateDateColumn({ name: "created_at" })
-  createdAt: Date;
-  @UpdateDateColumn({ name: "updated_at" })
-  updatedAt: Date;
-  @DeleteDateColumn({ name: "deleted_at" })
-  deletedAt: Date|null;
-}
+);
+export type User = typeof users.$inferSelect; // return type when queried
+export type NewUser = typeof users.$inferInsert; // insert type

@@ -1,12 +1,21 @@
-import { DataSource } from "typeorm";
-import { AppDataSource } from "../data-source";
-import * as admin from "firebase-admin";
-let db: DataSource | undefined;
+import "dotenv/config";
+import { PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+let db: PostgresJsDatabase;
 
-async function createCache<DataSource>() {
+export async function createCache<PostgresJsDatabase>() {
   if (!db) {
     console.log({ level: "info", message: "New Connection Created" });
-    db = await AppDataSource.initialize();
+
+    const connection = await postgres({
+      max: 1,
+      database: process.env.DB_NAME,
+      port: Number(process.env.DB_PORT),
+      password: process.env.DB_PASSWORD,
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+    });
+    db = await drizzle(connection);
     return db;
   }
   console.log({ level: "info", message: "Using existing connection" });
