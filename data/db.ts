@@ -1,13 +1,12 @@
 import "dotenv/config";
-import { PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-let db: PostgresJsDatabase;
+import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 
-export async function createCache<PostgresJsDatabase>() {
+let db: NodePgDatabase;
+
+export async function createCache<NodePgDatabase>() {
   if (!db) {
-    console.log({ level: "info", message: "New Connection Created" });
-
-    const connection = await postgres({
+    const client = new Pool({
       max: 1,
       database: process.env.DB_NAME,
       port: Number(process.env.DB_PORT),
@@ -15,7 +14,10 @@ export async function createCache<PostgresJsDatabase>() {
       user: process.env.DB_USER,
       host: process.env.DB_HOST,
     });
-    db = await drizzle(connection);
+    await client.connect();
+
+    console.log({ level: "info", message: "New Connection Created" });
+    db = drizzle(client);
     return db;
   }
   console.log({ level: "info", message: "Using existing connection" });
