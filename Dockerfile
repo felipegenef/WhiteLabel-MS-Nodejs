@@ -20,6 +20,7 @@ FROM node:16-alpine
 
 COPY --from=dev-stage /var/task/dist /var/task
 COPY --from=dev-stage /var/task/package.json /var/task/package.json
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.7.0 /lambda-adapter /opt/extensions/lambda-adapter
 RUN npm install --omit=dev
 EXPOSE 8080
 CMD ["node","index.js"]
